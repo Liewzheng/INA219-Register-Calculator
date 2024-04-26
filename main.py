@@ -15,11 +15,11 @@ HTML = """
     <h2>INA219 Register Calculator</h2>
     <form action="" method="post">
         <label for="resistance">Shunt Resistance (Ohms):</label><br>
-        <input type="text" id="resistance" name="resistance" value="{{ request.form['resistance'] }}"><br>
+        <input type="text" id="resistance" name="resistance" value="{{ resistance }}"><br>
         <label for="current">Max Current (Amps):</label><br>
-        <input type="text" id="current" name="current" value="{{ request.form['current'] }}"><br>
+        <input type="text" id="current" name="current" value="{{ current }}"><br>
         <label for="voltage">Voltage (Volts):</label><br>
-        <input type="text" id="voltage" name="voltage" value="{{ request.form['voltage'] }}"><br><br>
+        <input type="text" id="voltage" name="voltage" value="{{ voltage }}"><br><br>
         <input type="submit" value="Calculate">
     </form>
     {% if result %}
@@ -41,18 +41,31 @@ HTML = """
 """
 
 @app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def calculate():
+    # Set default values
+    resistance = '0.3'
+    current = '1.0'
+    voltage = '3.7'
     result = None
+
     if request.method == 'POST':
+        # Get the form values and convert to float
+        resistance_str = request.form.get('resistance', '0.3')
+        current_str = request.form.get('current', '1.0')
+        voltage_str = request.form.get('voltage', '3.7')
         try:
-            resistance = float(request.form['resistance'])
-            current = float(request.form['current'])
-            voltage = float(request.form['voltage'])
+            # Convert to float for calculation
+            resistance = float(resistance_str)
+            current = float(current_str)
+            voltage = float(voltage_str)
+
+            # Perform calculations
             current_lsb = current / 32768
             cal = int(0.04096 / (current_lsb * resistance))
             config = 0x1F7  # Example fixed value for simplicity
             
-            # Generating the LaTeX formulas dynamically
+            # Generate the LaTeX formulas dynamically
             cal_formula = Markup(f"\\(Cal = trunc(0.04096 / (Current_{{LSB}} \\times {resistance}))\\)")
             current_lsb_formula = Markup(f"\\(Current_{{LSB}} = \\frac{{{current}}}{{32768}} = {current_lsb:.10f} \\, \\text{{A}}\\)")
             
@@ -60,18 +73,31 @@ def calculate():
             python_code = "Python code here"
             c_code = "C code here"
             
+            # Build result dictionary
             result = {
                 'config': f'{config:04X}',
                 'calibration': f'{cal:04X}',
                 'cal_formula': cal_formula,
                 'current_lsb_formula': current_lsb_formula,
                 'python_code': python_code,
-                'c_code': c_code
+                'c_code': c_code,
+                'resistance': resistance_str,
+                'current': current_str,
+                'voltage': voltage_str
             }
         except ValueError:
-            result = {'error': 'Invalid input'}
+            result = {
+                'error': 'Invalid input',
+                'resistance': resistance_str,
+                'current': current_str,
+                'voltage': voltage_str
+            }
 
+    # Render the template
     return render_template_string(HTML, result=result)
+
+
+    return render_template_string(HTML, result=result, resistance=resistance, current=current, voltage=voltage)
 
 if __name__ == '__main__':
     app.run(debug=True)
