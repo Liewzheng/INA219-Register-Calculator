@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <title>INA219 Register Calculator</title>
@@ -7,47 +8,54 @@
     <script src="https://lib.baomitu.com/mathjax/3.2.0/es5/tex-chtml.js"></script>
     <link rel="stylesheet" href="/Users/liewzheng/Workspace/python/ina219_html/index.css">
 </head>
+
 <body>
     <script src="/Users/liewzheng/Workspace/python/ina219_html/index.js"></script>
     <div id="reg_setting">
         <h1>Sample Configuration</h1>
         <div id="table_register">
-        <div id="reg_0x00"></div>
+            <p id="reg_0x00"></p>
         </div>
-        
+
         <h1>Physical Configuration</h1>
+        <p>
+            请根据实际电路的连接信息输入数据。<br>
+            1. 建议使用万用表提前测量好 检测电压 的阻值，单位为欧姆。<br>
+            2. INA219 的可检测电压范围为 0~26V，
+        </p>
+        <div id="form_container">
+
+        </div>
     </div>
 
     <div id="result">
-        <div id="formula">
-            <div>
-                \(
-                    E=mc^2
-                \)
+        <h1>Calculate Process</h1>
+        <div id="formula_block">
+            <div class="formula" id="formula_1">
             </div>
-            <div>
-                \( 
-                    F = G \frac{m_1m_2}{r^2}
-                \)
+            <div class="formula" id="formula_2">
+            </div>
+            <div class="formula" id="formula_3">
             </div>
         </div>
 
-        <div id="reg_mapping">
-
-        </div>
-
+        
+        <h1>Code Example</h1>
+        
         <div id="code">
             <h2>Python Code</h2>
-            <pre>
-                <code id="python_code"></code>
-            </pre>
+            <div class="code_block" id="python_code">
+
+            </div>
+
             <h2>C Code</h2>
-            <pre>
-                <code id="c_code"></code>
-            </pre>
+            <div>
+
+            </div class="colde_block" id="c_code">
         </div>
     </div>
 
-    
+
 </body>
+
 </html>
