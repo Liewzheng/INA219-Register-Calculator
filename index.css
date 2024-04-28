@@ -64,3 +64,7 @@ th {
 .reg_0x00_bit {
     margin: 5px;
 }
+
+.reg_0x00_value {
+    margin-top: 15px;
+}

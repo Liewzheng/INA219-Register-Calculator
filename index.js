@@ -403,7 +403,7 @@ function update_reg_0x00() {
     var reg_0x00_pga_range_value = document.createElement('span');
     reg_0x00_pga_range_div.appendChild(reg_0x00_pga_range_value);
     reg_0x00_pga_range = reg_0x00_pga_gain * 40;
-    reg_0x00_pga_range_value.innerHTML = reg_0x00_pga_range;
+    reg_0x00_pga_range_value.innerHTML = `${reg_0x00_pga_range} mV`;
 
     document.getElementById('reg_0x00').appendChild(reg_0x00_pga_range_div);
     
@@ -453,6 +453,7 @@ function update_reg_0x00() {
     document.getElementById('reg_0x00').appendChild(reg_0x00_mode_div);
 
     var reg_0x00_value_div = document.createElement('div');
+    reg_0x00_value_div.className = 'reg_0x00_value';
 
     var reg_0x00_value_label = document.createElement('span');
     reg_0x00_value_div.appendChild(reg_0x00_value_label);
