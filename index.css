@@ -56,3 +56,11 @@ th {
 .code_block {
     margin: 20px;
 }
+
+#reg_0x00 {
+    margin: 20px;
+}
+
+.reg_0x00_bit {
+    margin: 5px;
+}
