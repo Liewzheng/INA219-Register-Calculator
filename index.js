@@ -12,7 +12,6 @@ window.MathJax = {
       minScale: 0.5,
       matchFontHeight: true,
       mtextInheritFont: true,
-      merrorInheritWatch: true,
       mathmlSpacing: false,
       skipAttributes: {},
       exFactor: 0.5,
@@ -42,6 +41,7 @@ document.head.appendChild(script);
  * GLOBAL VARIABLES
  ----------------------------------------------------------------------------*/
 reg_0x00 = 0x399F;
+reg_0x05 = 0x0000;
 
 reg_0x00_dict = {
     "bit15": {
@@ -125,62 +125,6 @@ var global_shunt_resistor = 0.3;
 var global_max_voltage = 3.8;
 var global_max_current = 1;
 
-python_code = `
-#!/usr/bin/env python
-# 导入必要的库
-import smbus
-import time
-
-# 假设您有一个名为SMBus的类可以用来与I2C设备通信
-bus = smbus.SMBus(1)  # 1表示 /dev/i2c-1
-DEVICE_ADDRESS = 0x40  # INA219的默认I2C地址
-
-# INA219的寄存器地址
-REG_CONFIG = 0x00
-REG_SHUNT_VOLTAGE = 0x01
-REG_BUS_VOLTAGE = 0x02
-REG_POWER = 0x03
-REG_CURRENT = 0x04
-REG_CALIBRATION = 0x05
-
-# INA219的配置和校准值（这些值将根据您的实际应用进行计算和设置）
-config_value = 0x1F7
-cal_value = 0x1179
-
-# 将计算得到的配置和校准值写入INA219
-bus.write_word_data(DEVICE_ADDRESS, REG_CONFIG, config_value)
-bus.write_word_data(DEVICE_ADDRESS, REG_CALIBRATION, cal_value)
-
-# 读取和转换数值的函数
-def read_ina219():
-    # 读取测量值
-    shunt_voltage = bus.read_word_data(DEVICE_ADDRESS, REG_SHUNT_VOLTAGE)
-    bus_voltage = bus.read_word_data(DEVICE_ADDRESS, REG_BUS_VOLTAGE)
-    current = bus.read_word_data(DEVICE_ADDRESS, REG_CURRENT)
-    power = bus.read_word_data(DEVICE_ADDRESS, REG_POWER)
-    
-    # 数据转换（具体转换依赖于您的配置和校准值）
-    shunt_voltage = shunt_voltage * 0.01  # 例子: 10uV per bit
-    bus_voltage = (bus_voltage >> 3) * 4  # 例子: 4mV per bit, 右移3位去掉无效位
-    current = current * current_lsb_value  # current_lsb_value是根据您的校准值计算得到的
-    power = power * power_lsb_value  # power_lsb_value是根据您的校准值计算得到的
-
-    return shunt_voltage, bus_voltage, current, power
-
-# 主程序示例
-def main():
-    while True:
-        shunt_voltage, bus_voltage, current, power = read_ina219()
-        print(f"Shunt Voltage: {shunt_voltage} mV")
-        print(f"Bus Voltage: {bus_voltage / 1000} V")
-        print(f"Current: {current} mA")
-        print(f"Power: {power} mW")
-        time.sleep(1)  # 读取间隔1秒
-
-if __name__ == '__main__':
-    main()
-
-`;
 
 /*-----------------------------------------------------------------------------
  * FUNCTIONS
@@ -222,6 +166,7 @@ function updateRegister(bitValue, bitPosition) {
 
     update_reg_0x00();
     
+    update_python_code();
     update_formula();
 }
 
@@ -337,18 +282,21 @@ function createForm(elementId) {
     // 添加input监听器
     shuntResistorInput.addEventListener('input', function () {
         global_shunt_resistor = parseFloat(shuntResistorInput.value);
+        update_python_code();
         update_formula();
         console.log('global_shunt_resistor updated:', global_shunt_resistor);
     });
 
     maxVoltageInput.addEventListener('input', function () {
         global_max_voltage = parseFloat(maxVoltageInput.value);
+        update_python_code();
         update_formula();
         console.log('global_max_voltage updated:', global_max_voltage);
     });
 
     maxCurrentInput.addEventListener('input', function () {
         global_max_current = parseFloat(maxCurrentInput.value);
+        update_python_code();
         update_formula();
         console.log('global_max_current updated:', global_max_current);
     });
@@ -371,11 +319,68 @@ function update_formula() {
     calibration_value = 0.04096 / (current_lsb * global_shunt_resistor);
     document.getElementById('formula_1').innerHTML = `\\\( Current_{LSB} = \\frac{${global_max_current}}{2^{15}} A = \\frac{${global_max_current}}{32768} A = ${current_lsb.toFixed(9)} A\\\)`;
     document.getElementById('formula_2').innerHTML = `\\\( Calibration Value = \\frac{0.04096}{Current_{LSB} \\times ${global_shunt_resistor}} = \\frac{0.04096}{\\frac{${global_max_current}}{32768} \\times ${global_shunt_resistor}} = ${calibration_value.toFixed(3)} = 0x${(Math.floor(calibration_value) >>> 0).toString(16).padStart(4, '0').toUpperCase()}\\\)`;
-    MathJax.typesetPromise();
+
+    reg_0x05 = Math.floor(calibration_value) >>> 0;
+    MathJax.typeset();
 }
 
 function update_python_code() {
-    document.getElementById('python_code').innerHTML = python_code;
+    
+    document.getElementById('python_code').innerHTML = "";
+
+    var python_code_pre = document.createElement('pre');
+    var python_code_text = document.createElement('code');
+    python_code_text.className = 'python';
+    python_code_text.innerHTML = `#!/usr/bin/env python
+    
+import smbus
+import time
+
+bus = smbus.SMBus(1)
+DEVICE_ADDRESS = 0x40
+
+REG_CONFIG = 0x00
+REG_SHUNT_VOLTAGE = 0x01
+REG_BUS_VOLTAGE = 0x02
+REG_POWER = 0x03
+REG_CURRENT = 0x04
+REG_CALIBRATION = 0x05
+
+config_value = 0x${reg_0x00.toString(16).padStart(4, '0').toUpperCase()}
+cal_value = 0x${reg_0x05.toString(16).padStart(4, '0').toUpperCase()}
+
+bus.write_word_data(DEVICE_ADDRESS, REG_CONFIG, config_value)
+bus.write_word_data(DEVICE_ADDRESS, REG_CALIBRATION, cal_value)
+
+def read_ina219():
+    
+    shunt_voltage = bus.read_word_data(DEVICE_ADDRESS, REG_SHUNT_VOLTAGE)
+    bus_voltage = bus.read_word_data(DEVICE_ADDRESS, REG_BUS_VOLTAGE)
+    current = bus.read_word_data(DEVICE_ADDRESS, REG_CURRENT)
+    power = bus.read_word_data(DEVICE_ADDRESS, REG_POWER)
+    
+    shunt_voltage = shunt_voltage * 0.01  
+    bus_voltage = (bus_voltage >> 3) * 4 
+    current = current * current_lsb_value 
+    power = power * power_lsb_value
+
+    return shunt_voltage, bus_voltage, current, power
+
+def main():
+    while True:
+        shunt_voltage, bus_voltage, current, power = read_ina219()
+        print(f"Shunt Voltage: {shunt_voltage} mV")
+        print(f"Bus Voltage: {bus_voltage / 1000} V")
+        print(f"Current: {current} mA")
+        print(f"Power: {power} mW")
+
+        time.sleep(1)  # 读取间隔1秒
+
+if __name__ == '__main__':
+    main()`;
+
+    python_code_pre.appendChild(python_code_text);
+    document.getElementById('python_code').appendChild(python_code_pre);
 }
 
 /*
@@ -513,8 +518,8 @@ function initialize() {
     update_reg_0x00();
     createForm('form_container');
 
-    update_formula();
     update_python_code();
+    update_formula();
 
 }
 

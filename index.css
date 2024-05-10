@@ -48,11 +48,6 @@ th {
     margin: 15px;
 }
 
-#code {
-    padding-left: 30px;
-    padding-right: 20%;
-}
-
 .code_block {
     margin: 20px;
 }
@@ -67,4 +62,22 @@ th {
 
 .reg_0x00_value {
     margin-top: 15px;
+}
+
+pre {
+    margin: 10px;
+    padding: 10px;
+    background-color: #111;
+    overflow-x: auto;
+    color: #f0f0f0;
+}
+
+code {
+    font-family: 'Cascadia Code Mono', 'Roboto Mono', monospace;
+}
+
+#code {
+    padding-left: 30px;
+    padding-right: 20%;
+    font-size: 15px;
 }
