@@ -166,7 +166,6 @@ function updateRegister(bitValue, bitPosition) {
 
     update_reg_0x00();
     
-    update_python_code();
     update_formula();
 }
 
@@ -282,21 +281,18 @@ function createForm(elementId) {
     // 添加input监听器
     shuntResistorInput.addEventListener('input', function () {
         global_shunt_resistor = parseFloat(shuntResistorInput.value);
-        update_python_code();
         update_formula();
         console.log('global_shunt_resistor updated:', global_shunt_resistor);
     });
 
     maxVoltageInput.addEventListener('input', function () {
         global_max_voltage = parseFloat(maxVoltageInput.value);
-        update_python_code();
         update_formula();
         console.log('global_max_voltage updated:', global_max_voltage);
     });
 
     maxCurrentInput.addEventListener('input', function () {
         global_max_current = parseFloat(maxCurrentInput.value);
-        update_python_code();
         update_formula();
         console.log('global_max_current updated:', global_max_current);
     });
@@ -321,6 +317,8 @@ function update_formula() {
     document.getElementById('formula_2').innerHTML = `\\\( Calibration Value = \\frac{0.04096}{Current_{LSB} \\times ${global_shunt_resistor}} = \\frac{0.04096}{\\frac{${global_max_current}}{32768} \\times ${global_shunt_resistor}} = ${calibration_value.toFixed(3)} = 0x${(Math.floor(calibration_value) >>> 0).toString(16).padStart(4, '0').toUpperCase()}\\\)`;
 
     reg_0x05 = Math.floor(calibration_value) >>> 0;
+    update_python_code();
+
     MathJax.typeset();
 }
 
@@ -518,7 +516,7 @@ function initialize() {
     update_reg_0x00();
     createForm('form_container');
 
-    update_python_code();
+    
     update_formula();
 
 }
