@@ -1,5 +1,44 @@
 
 /*-----------------------------------------------------------------------------
+ * GLOBAL CONFIGURATIONS
+ ----------------------------------------------------------------------------*/
+window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    chtml: {
+      scale: 1,
+      minScale: 0.5,
+      matchFontHeight: true,
+      mtextInheritFont: true,
+      merrorInheritWatch: true,
+      mathmlSpacing: false,
+      skipAttributes: {},
+      exFactor: 0.5,
+      displayAlign: 'center',
+      displayIndent: '0',
+      fontURL: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/output/chtml/fonts/woff-v2',
+      adaptiveCSS: true
+    },
+    startup: {
+      ready: () => {
+        console.log('MathJax is ready!');
+        MathJax.startup.defaultReady();
+        MathJax.startup.promise.then(() => {
+          // 刷新公式渲染
+          MathJax.typesetPromise();
+        });
+      }
+    }
+  };
+
+var script = document.createElement('script');
+script.src = "https://lib.baomitu.com/mathjax/3.2.0/es5/tex-chtml.js";
+document.head.appendChild(script);
+  
+
+/*-----------------------------------------------------------------------------
  * GLOBAL VARIABLES
  ----------------------------------------------------------------------------*/
 reg_0x00 = 0x399F;
@@ -330,9 +369,9 @@ function createForm(elementId) {
 function update_formula() {
     current_lsb = global_max_current / 32768;
     calibration_value = 0.04096 / (current_lsb * global_shunt_resistor);
-    document.getElementById('formula_1').innerHTML = `\\\( Current_{LSB} = \\frac{${global_max_current}}{2^{15}} A = \\frac{${global_max_current}}{32768} A = ${current_lsb} A\\\)`;
-    document.getElementById('formula_2').innerHTML = `\\\( Calibration Value = \\frac{0.04096}{Current_{LSB} \\times ${global_shunt_resistor}} = \\frac{0.04096}{\\frac{${global_max_current}}{32768} \\times ${global_shunt_resistor}} = ${calibration_value} = 0x${(Math.floor(calibration_value) >>> 0).toString(16).padStart(4, '0').toUpperCase()}\\\)`;
-    MathJax.typeset();
+    document.getElementById('formula_1').innerHTML = `\\\( Current_{LSB} = \\frac{${global_max_current}}{2^{15}} A = \\frac{${global_max_current}}{32768} A = ${current_lsb.toFixed(9)} A\\\)`;
+    document.getElementById('formula_2').innerHTML = `\\\( Calibration Value = \\frac{0.04096}{Current_{LSB} \\times ${global_shunt_resistor}} = \\frac{0.04096}{\\frac{${global_max_current}}{32768} \\times ${global_shunt_resistor}} = ${calibration_value.toFixed(3)} = 0x${(Math.floor(calibration_value) >>> 0).toString(16).padStart(4, '0').toUpperCase()}\\\)`;
+    MathJax.typesetPromise();
 }
 
 function update_python_code() {
